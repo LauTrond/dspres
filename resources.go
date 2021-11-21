@@ -24,8 +24,9 @@ type ResourceRequirement struct {
 }
 
 type ManufactureParameters struct {
-	FacilityRate map[string]float64
-	Formula map[string]int
+	FacilityRate       map[string]float64
+	Formula            map[string]int
+	ImportingResources map[string]bool
 }
 
 var AllResources = []*Resource{
@@ -49,7 +50,7 @@ var AllResources = []*Resource{
 
 	//珍奇
 	{"原油", 0, "原油萃取机", 1, 1, nil},
-	{"硫酸",0,  "抽水机", 1, 1, nil},
+	{"硫酸",1,  "抽水机", 1, 1, nil},
 	{"可燃冰", 0, "行星采集器", 1, 1, nil},
 	{"有机晶体",1,  "采矿机", 1, 1, nil},
 	{"刺笋结晶", 0, "采矿机", 1, 1, nil},
@@ -110,7 +111,7 @@ var AllResources = []*Resource{
 		{"铁块", 3},
 	}},
 
-	{"硫酸",1,  "化工厂", 6, 4, []ResourceRequirement{
+	{"硫酸",0,  "化工厂", 6, 4, []ResourceRequirement{
 		{"精炼油", 6},
 		{"石矿", 8},
 		{"水", 4},
@@ -355,6 +356,39 @@ var AllResources = []*Resource{
 		{"引力矩阵", 1},
 		{"反物质", 1},
 	}},
+
+	//==============================
+
+	{"行星内物流运输站", 0, "制造台", 20, 1, []ResourceRequirement{
+		{"钢材", 40},
+		{"钛块", 40},
+		{"处理器", 40},
+		{"粒子容器", 20},
+	}},
+	{"星际物流运输站", 0, "制造台", 30, 1, []ResourceRequirement{
+		{"行星内物流运输站", 1},
+		{"钛合金", 40},
+		{"粒子容器", 20},
+	}},
+	{"推进器", 0, "制造台", 4, 1, []ResourceRequirement{
+		{"钢材", 2},
+		{"铜块", 3},
+	}},
+	{"物流运输机", 0, "制造台", 4, 1, []ResourceRequirement{
+		{"铁块", 5},
+		{"处理器", 2},
+		{"推进器", 2},
+	}},
+	{"加力推进器", 0, "制造台", 6, 1, []ResourceRequirement{
+		{"钛合金", 5},
+		{"电磁涡轮", 5},
+	}},
+	{"星际物流运输船", 0, "制造台", 6, 1, []ResourceRequirement{
+		{"钛合金", 10},
+		{"处理器", 10},
+		{"加力推进器", 2},
+	}},
+
 }
 
 var mappingResources = func() map[string]*Resource {
@@ -394,10 +428,21 @@ type ResourceRate struct {
 }
 
 func (ctx *ManufactureParameters) getResource(resName string) *Resource {
+	if ctx.ImportingResources[resName] {
+		return &Resource{
+			Name: resName,
+			Formula: -1,
+			Facility: "外部输入",
+			Duration: 1,
+			Num: 1,
+		}
+	}
 	resKey := fmt.Sprintf("%s-%d", resName, ctx.Formula[resName])
 	return mappingResources[resKey]
 }
 
+//递归计算所有资源公式
+//返回 资源名称 - 制造设备数量
 func (ctx *ManufactureParameters) calculateRequirement(resRate ResourceRate) map[string]float64 {
 	result := map[string]float64{}
 
