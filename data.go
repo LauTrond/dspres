@@ -109,7 +109,7 @@ var AllFormulas = []*Formula{
 		{"钛块", 1},
 	}},
 	{"碳纳米管", 1, "化工厂", 4, 2, true, true, []ResourceNum{
-		{"刺笋结晶", 2},
+		{"刺笋结晶", 6},
 	}},
 
 	{"增产剂MK1", 0, "制造台", 0.5, 1, true, true, []ResourceNum{
@@ -207,7 +207,7 @@ var AllFormulas = []*Formula{
 		{"氢", 12},
 	}},
 	{"卡西米尔晶体", 1, "制造台", 4, 1, true, true, []ResourceNum{
-		{"光栅石", 4},
+		{"光栅石", 8},
 		{"石墨烯", 2},
 		{"氢", 12},
 	}},
@@ -354,6 +354,12 @@ var AllFormulas = []*Formula{
 		{"钛合金", 40},
 		{"粒子容器", 20},
 	}},
+	{"能量枢纽", 0, "制造台", 15, 1, true, true, []ResourceNum{
+		{"钛合金", 40},
+		{"钢材", 40},
+		{"处理器", 40},
+		{"粒子容器", 8},
+	}},
 	{"推进器", 0, "制造台", 4, 1, true, true, []ResourceNum{
 		{"钢材", 2},
 		{"铜块", 3},
@@ -372,6 +378,7 @@ var AllFormulas = []*Formula{
 		{"处理器", 10},
 		{"加力推进器", 2},
 	}},
+
 }
 
 var facilityOrder = map[string]int{

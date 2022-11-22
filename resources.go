@@ -56,16 +56,22 @@ type ResourceNum struct {
 type ManufactureParameters struct {
 	FacilityRate       map[string]float64
 	FormulaNums        map[string]int
-	ImportingResources map[string]bool
+	//资源从外部运入，不计算其生产，计算其运输需要的物流塔数量
+	//值是距离（光年）
+	ImportingResources map[string]float64
 	SprayingResources  map[string]SprayType
 	SprayingClass      *SprayingClass
+	//计算增产剂用量时，默认使用增产剂喷增产剂自身，
+	//可以提高单个增产剂喷涂次数，减少增产剂消耗
+	//设为true禁用这个计算
+	NoRecurseSpraying bool
 }
 
 func (mp *ManufactureParameters) Clone() *ManufactureParameters {
 	r := &ManufactureParameters{
 		FacilityRate:       map[string]float64{},
 		FormulaNums:        map[string]int{},
-		ImportingResources: map[string]bool{},
+		ImportingResources: map[string]float64{},
 		SprayingResources:  map[string]SprayType{},
 	}
 	for k, v := range mp.FacilityRate {
@@ -82,6 +88,12 @@ func (mp *ManufactureParameters) Clone() *ManufactureParameters {
 	}
 	r.SprayingClass = mp.SprayingClass
 	return r
+}
+
+func (mp *ManufactureParameters) SetImportingResources(r map[string]float64) {
+	for k, v := range r {
+		mp.ImportingResources[k]=v
+	}
 }
 
 var mappingResources = func() map[string]*Formula {
@@ -101,13 +113,13 @@ var resourceOrder = func() map[string]int {
 }()
 
 func (mp *ManufactureParameters) getFormula(resName string) *Formula {
-	if mp.ImportingResources[resName] {
+	if distance,importing := mp.ImportingResources[resName]; importing {
 		return &Formula{
 			ResourceName: resName,
 			FormulaNum:   -1,
-			Facility:     "外部输入",
-			Duration:     1,
-			OutputNum:    1,
+			Facility:     "星际物流站",
+			Duration:     (distance * 60 + 646) / 290.0,
+			OutputNum:    2000,
 		}
 	}
 	resKey := fmt.Sprintf("%s-%d", resName, mp.FormulaNums[resName])
@@ -161,11 +173,15 @@ func (mp *ManufactureParameters) calculateProduce(requirements map[string]float6
 				for _, m := range f.Materials {
 					sumSprayCount += m.Num
 				}
+				sprayingCoung := mp.SprayingClass.Count
+				if !mp.NoRecurseSpraying {
+					sprayingCoung = sprayingCoung * mp.SprayingClass.BonusRate - 1
+				}
+				sprayRate = sumSprayCount / sprayingCoung
 				materials = append(materials, ResourceNum{
 					ResourceName: mp.SprayingClass.Resource,
-					Num:          sumSprayCount / mp.SprayingClass.Count,
+					Num:          sprayRate,
 				})
-				sprayRate = sumSprayCount / mp.SprayingClass.Count
 			}
 
 			//先从需求中减去这个资源
@@ -245,16 +261,18 @@ func (mp *ManufactureParameters) ShowRequirement(reqs map[string]float64, output
 	})
 
 	fmt.Println("====生产线====")
-	templateLine := strings.Split(strings.Trim(outputTemplate, "\n"), "\n")
-	for _, line := range templateLine {
-		if p, ok := producesMap[line]; ok {
-			fmt.Println(mp.FormatReq(p))
-			delete(producesMap, line)
-		} else {
-			fmt.Println(line)
+	outputTemplate = strings.Trim(outputTemplate, "\n")
+	if outputTemplate != "" {
+		for _, line := range strings.Split(outputTemplate, "\n") {
+			if p, ok := producesMap[line]; ok {
+				fmt.Println(mp.FormatReq(p))
+				delete(producesMap, line)
+			} else {
+				fmt.Println(line)
+			}
 		}
+		fmt.Println()
 	}
-	fmt.Println()
 	for _, p := range produces {
 		if p, ok := producesMap[p.ResourceName]; ok {
 			fmt.Println(mp.FormatReq(p))
