@@ -37,6 +37,9 @@ var AllFormulas = []*Formula{
 		{"氢", -2},
 	}},
 
+	//黑雾
+	{"核心素", 0, "矿脉", 1, 1, false, false, nil},
+
 	//
 	{"铁块", 0, "电弧熔炉", 1, 1, true, true, []ResourceNum{
 		{"铁矿", 1},
@@ -168,6 +171,14 @@ var AllFormulas = []*Formula{
 		{"磁线圈", 4},
 		{"棱镜", 2},
 	}},
+	{"光子合并器", 0, "制造台", 3, 1, true, true, []ResourceNum{
+		{"棱镜", 2},
+		{"电路板", 1},
+	}},
+	{"光子合并器", 1, "制造台", 3, 1, true, true, []ResourceNum{
+		{"光栅石", 1},
+		{"电路板", 1},
+	}},
 	{"钛晶石", 0, "制造台", 4, 1, true, true, []ResourceNum{
 		{"有机晶体", 1},
 		{"钛块", 3},
@@ -252,9 +263,24 @@ var AllFormulas = []*Formula{
 		{"湮灭约束球", 1},
 		{"钛合金", 1},
 	}},
+	{"奇异湮灭燃料棒", 0, "制造台", 32, 1, true, false, []ResourceNum{
+		{"反物质燃料棒", 8},
+		{"核心素", 1},
+		{"奇异物质", 2},
+		{"框架材料", 1},
+	}},
 
 	//==============================
 
+	{"动力引擎", 0, "制造台", 3, 1, true, true, []ResourceNum{
+		{"磁线圈", 1},
+		{"铜块", 2},
+	}},
+	{"配送运输机", 0, "制造台", 2, 1, true, true, []ResourceNum{
+		{"铁块", 2},
+		{"动力引擎", 1},
+		{"处理器", 1},
+	}},
 	{"推进器", 0, "制造台", 4, 1, true, true, []ResourceNum{
 		{"钢材", 2},
 		{"铜块", 3},
@@ -276,14 +302,105 @@ var AllFormulas = []*Formula{
 
 	//==============================
 
-	{"光子合并器", 0, "制造台", 3, 1, true, true, []ResourceNum{
-		{"棱镜", 2},
-		{"电路板", 1},
+	{"燃烧单元", 0, "制造台", 3, 1, true, true, []ResourceNum{
+		{"煤矿", 3},
 	}},
-	{"光子合并器", 1, "制造台", 3, 1, true, true, []ResourceNum{
-		{"光栅石", 1},
-		{"电路板", 1},
+	{"爆破单元", 0, "制造台", 6, 2, true, true, []ResourceNum{
+		{"燃烧单元", 2},
+		{"塑料", 2},
+		{"硫酸", 1},
 	}},
+	{"晶石爆破单元", 0, "制造台", 24, 8, true, true, []ResourceNum{
+		{"爆破单元", 8},
+		{"卡西米尔晶体", 1},
+		{"金刚石", 8},
+	}},
+	{"机枪弹箱", 0, "制造台", 1, 1, true, true, []ResourceNum{
+		{"铜块", 1},
+	}},
+	{"钛化弹箱", 0, "制造台", 2, 1, true, true, []ResourceNum{
+		{"机枪弹箱", 1},
+		{"钛块", 2},
+	}},
+	{"超合金弹箱", 0, "制造台", 1, 1, true, true, []ResourceNum{
+		{"钛化弹箱", 1},
+		{"钛合金", 2},
+	}},
+	{"导弹组", 0, "制造台", 2, 1, true, true, []ResourceNum{
+		{"铜块", 6},
+		{"电路板", 3},
+		{"燃烧单元", 2},
+		{"动力引擎", 1},
+	}},
+	{"超音速导弹组", 0, "制造台", 4, 2, true, true, []ResourceNum{
+		{"导弹组", 2},
+		{"处理器", 4},
+		{"爆破单元", 4},
+		{"推进器", 2},
+	}},
+	{"引力导弹组", 0, "制造台", 6, 3, true, true, []ResourceNum{
+		{"超音速导弹组", 3},
+		{"晶石爆破单元", 6},
+		{"奇异物质", 3},
+	}},
+	{"炮弹组", 0, "制造台", 1.5, 1, true, true, []ResourceNum{
+		{"铜块", 9},
+		{"燃烧单元", 2},
+	}},
+	{"高爆炮弹组", 0, "制造台", 3, 1, true, true, []ResourceNum{
+		{"炮弹组", 1},
+		{"钛块", 6},
+		{"爆破单元", 2},
+	}},
+	{"晶石炮弹组", 0, "制造台", 6, 1, true, true, []ResourceNum{
+		{"高爆炮弹组", 1},
+		{"钛合金", 3},
+		{"晶石爆破单元", 2},
+	}},
+	{"等离子胶囊", 0, "制造台", 2, 1, true, true, []ResourceNum{
+		{"石墨烯", 1},
+		{"磁铁", 2},
+		{"重氢", 10},
+	}},
+	{"反物质胶囊", 0, "制造台", 2, 1, true, true, []ResourceNum{
+		{"等离子胶囊", 1},
+		{"粒子容器", 1},
+		{"氢", 10},
+		{"反物质", 10},
+	}},
+	{"原型机", 0, "制造台", 2, 1, true, true, []ResourceNum{
+		{"铁块", 3},
+		{"动力引擎", 1},
+		{"电路板", 2},
+		{"电浆激发器", 1},
+	}},
+	{"精准无人机", 0, "制造台", 4, 1, true, true, []ResourceNum{
+		{"原型机", 1},
+		{"电磁涡轮", 1},
+		{"电路板", 2},
+		{"光子合并器", 2},
+	}},
+	{"攻击无人机", 0, "制造台", 4, 1, true, true, []ResourceNum{
+		{"原型机", 1},
+		{"电磁涡轮", 1},
+		{"处理器", 1},
+		{"离子容器", 1},
+	}},
+	{"护卫舰", 0, "制造台", 5, 1, true, true, []ResourceNum{
+		{"钛合金", 5},
+		{"加力推进器", 1},
+		{"处理器", 2},
+		{"粒子容器", 3},
+	}},
+	{"驱逐舰", 0, "制造台", 8, 1, true, true, []ResourceNum{
+		{"框架材料", 20},
+		{"加力推进器", 4},
+		{"处理器", 4},
+		{"奇异粒子", 1},
+	}},
+
+	//==============================
+
 	{"太阳帆", 0, "制造台", 4, 2, true, true, []ResourceNum{
 		{"石墨烯", 1},
 		{"光子合并器", 1},
@@ -334,9 +451,6 @@ var AllFormulas = []*Formula{
 		{"引力矩阵", 1},
 		{"反物质", 1},
 	}},
-
-	//==============================
-
 	{"空间翘曲器", 0, "制造台", 10, 8, true, true, []ResourceNum{
 		{"引力矩阵", 1},
 	}},
@@ -378,7 +492,6 @@ var AllFormulas = []*Formula{
 		{"处理器", 10},
 		{"加力推进器", 2},
 	}},
-
 }
 
 var facilityOrder = map[string]int{
@@ -396,30 +509,30 @@ var facilityOrder = map[string]int{
 	"研究所":   12,
 }
 
-var defaultIncreaseFacilities = map[string]bool {
-	"制造台": true,
+var defaultExtraFacilities = map[string]bool{
+	"制造台":   true,
 	"粒子对撞机": true,
-	"研究所": true,
+	"研究所":   true,
 }
 
 var SprayingMark1 = &SprayingClass{
 	Resource:    "增产剂MK1",
 	SpeedUpRate: 1.25,
-	BonusRate:   1.125,
+	ExtraRate:   1.125,
 	PowerRate:   1.3,
 	Count:       12,
 }
 var SprayingMark2 = &SprayingClass{
 	Resource:    "增产剂MK2",
 	SpeedUpRate: 1.5,
-	BonusRate:   1.2,
+	ExtraRate:   1.2,
 	PowerRate:   1.7,
 	Count:       24,
 }
 var SprayingMark3 = &SprayingClass{
 	Resource:    "增产剂MK3",
 	SpeedUpRate: 2.0,
-	BonusRate:   1.25,
+	ExtraRate:   1.25,
 	PowerRate:   2.5,
 	Count:       60,
 }

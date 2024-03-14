@@ -11,13 +11,13 @@ type SprayType int
 var (
 	SprayDisabled = SprayType(0)
 	SpraySpeedUp  = SprayType(1)
-	SprayBonus    = SprayType(2)
+	SprayExtra    = SprayType(2)
 )
 
 type SprayingClass struct {
 	Resource    string
 	SpeedUpRate float64
-	BonusRate   float64
+	ExtraRate   float64
 	PowerRate   float64
 	Count       float64
 }
@@ -54,8 +54,8 @@ type ResourceNum struct {
 }
 
 type ManufactureParameters struct {
-	FacilityRate       map[string]float64
-	FormulaNums        map[string]int
+	FacilityRate map[string]float64
+	FormulaNums  map[string]int
 	//资源从外部运入，不计算其生产，计算其运输需要的物流塔数量
 	//值是距离（光年）
 	ImportingResources map[string]float64
@@ -92,7 +92,7 @@ func (mp *ManufactureParameters) Clone() *ManufactureParameters {
 
 func (mp *ManufactureParameters) SetImportingResources(r map[string]float64) {
 	for k, v := range r {
-		mp.ImportingResources[k]=v
+		mp.ImportingResources[k] = v
 	}
 }
 
@@ -113,12 +113,12 @@ var resourceOrder = func() map[string]int {
 }()
 
 func (mp *ManufactureParameters) getFormula(resName string) *Formula {
-	if distance,importing := mp.ImportingResources[resName]; importing {
+	if distance, importing := mp.ImportingResources[resName]; importing {
 		return &Formula{
 			ResourceName: resName,
 			FormulaNum:   -1,
 			Facility:     "星际物流站",
-			Duration:     (distance * 60 + 646) / 290.0,
+			Duration:     (distance*60 + 646) / 290.0,
 			OutputNum:    2000,
 		}
 	}
@@ -126,7 +126,7 @@ func (mp *ManufactureParameters) getFormula(resName string) *Formula {
 	return mappingResources[resKey]
 }
 
-//迭代计算所有资源公式
+// 迭代计算所有资源公式
 func (mp *ManufactureParameters) calculateProduce(requirements map[string]float64) map[string]*Produce {
 	producesMap := map[string]*Produce{}
 	for changed := true; changed; {
@@ -136,6 +136,9 @@ func (mp *ManufactureParameters) calculateProduce(requirements map[string]float6
 				continue
 			}
 			f := mp.getFormula(resName)
+			if f == nil {
+				panic(fmt.Errorf("unknown resource name: %s", resName))
+			}
 
 			//生产速度加成
 			rateRatio := 1.0
@@ -154,8 +157,8 @@ func (mp *ManufactureParameters) calculateProduce(requirements map[string]float6
 			case SprayDisabled:
 			case SpraySpeedUp:
 				rateRatio = mp.SprayingClass.SpeedUpRate
-			case SprayBonus:
-				outputRatio = mp.SprayingClass.BonusRate
+			case SprayExtra:
+				outputRatio = mp.SprayingClass.ExtraRate
 			}
 
 			//每秒生产（公式应用）次数
@@ -171,11 +174,13 @@ func (mp *ManufactureParameters) calculateProduce(requirements map[string]float6
 				copy(materials, f.Materials)
 				sumSprayCount := 0.0
 				for _, m := range f.Materials {
-					sumSprayCount += m.Num
+					if m.Num > 0 {
+						sumSprayCount += m.Num
+					}
 				}
 				sprayingCoung := mp.SprayingClass.Count
 				if !mp.NoRecurseSpraying {
-					sprayingCoung = sprayingCoung * mp.SprayingClass.BonusRate - 1
+					sprayingCoung = sprayingCoung*mp.SprayingClass.ExtraRate - 1
 				}
 				sprayRate = sumSprayCount / sprayingCoung
 				materials = append(materials, ResourceNum{
@@ -191,10 +196,10 @@ func (mp *ManufactureParameters) calculateProduce(requirements map[string]float6
 			p, ok := producesMap[resName]
 			if !ok {
 				p = &Produce{
-					Formula:     f,
-					OutputRes:   resName,
-					SprayType:   st,
-					Inputs:      map[string]float64{},
+					Formula:   f,
+					OutputRes: resName,
+					SprayType: st,
+					Inputs:    map[string]float64{},
 				}
 				producesMap[resName] = p
 			}
@@ -220,13 +225,13 @@ func (mp *ManufactureParameters) getSprayType(f *Formula) SprayType {
 
 	t, ok := mp.SprayingResources[f.ResourceName]
 	if !ok {
-		if defaultIncreaseFacilities[f.Facility] {
-			t = SprayBonus
+		if defaultExtraFacilities[f.Facility] {
+			t = SprayExtra
 		} else {
 			t = SpraySpeedUp
 		}
 	}
-	if !f.CanBonus && t == SprayBonus {
+	if !f.CanBonus && t == SprayExtra {
 		t = SpraySpeedUp
 	}
 	if !f.CanSpeedUp && t == SpraySpeedUp {
@@ -299,7 +304,7 @@ func (mp *ManufactureParameters) FormatReq(p *Produce) string {
 	switch p.SprayType {
 	case SpraySpeedUp:
 		s += " <- 加速"
-	case SprayBonus:
+	case SprayExtra:
 		s += " <- 增产"
 	}
 	if p.SprayType != SprayDisabled {
